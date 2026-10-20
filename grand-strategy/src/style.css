@@ -60,3 +60,6 @@ button:hover, select:hover { border-color: var(--accent); }
 .build-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 .build-button { text-align: left; font-size: .7rem; }
 .queue-note { margin-top: 10px; }
+
+.event-log { display: grid; gap: 8px; margin: 12px 0 0; padding-left: 18px; color: #b7c6d2; font-size: .76rem; line-height: 1.45; }
+.event-log li::marker { color: var(--accent); }
