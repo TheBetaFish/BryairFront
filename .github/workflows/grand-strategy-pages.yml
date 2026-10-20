@@ -2,7 +2,7 @@ name: Deploy Grand Strategy Prototype
 
 on:
   push:
-    branches: [feature/grand-strategy-layer1]
+    branches: [master, feature/grand-strategy-layer1]
   workflow_dispatch:
 
 permissions:
