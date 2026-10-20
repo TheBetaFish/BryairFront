@@ -14,5 +14,5 @@
     "verbatimModuleSyntax": true,
     "noImplicitOverride": true
   },
-  "exclude": ["test"]
+  "exclude": ["test", "grand-strategy", "node_modules"]
 }
