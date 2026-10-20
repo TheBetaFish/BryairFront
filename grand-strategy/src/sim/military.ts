@@ -48,8 +48,7 @@ export function attackProvince(state: GameState, fromProvinceId: number, targetP
     return { ok: true, message: `Attack failed. Defensive strength: ${defense.toFixed(1)}.` };
   }
   const defenderId = target.ownerId;
-  const loss = defenders[0];
-  if (loss) loss.strength = Math.max(0, Math.round((loss.strength - 0.5) * 10) / 10);
+  for (const defender of defenders) defender.strength = 0;
   target.ownerId = attackerId;
   target.garrison = 0;
   const oldOwner = state.countries.find((country) => country.id === defenderId);
