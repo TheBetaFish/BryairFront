@@ -1,7 +1,7 @@
 import "./style.css";
 import { createWorld, MAP_HEIGHT, MAP_WIDTH } from "./data/world";
 import type { Province, WorldMap } from "./types";
-import { createInitialState } from "./sim/state";
+import { createInitialState, validateGameState } from "./sim/state";
 import type { BuildingType, GameState, ResourceKey } from "./sim/state";
 import { BUILDING_RULES, calculateDailyNet } from "./sim/economy";
 import { advanceDay } from "./sim/tick";
