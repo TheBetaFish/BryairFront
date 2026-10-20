@@ -36,6 +36,16 @@ export interface ProvinceState extends Province {
   garrison: number;
 }
 
+export type UnitType = "infantry" | "armor" | "artillery";
+
+export interface ArmyUnit {
+  id: number;
+  countryId: number;
+  provinceId: number;
+  type: UnitType;
+  strength: number;
+}
+
 export interface GameState {
   version: 1;
   day: number;
@@ -44,6 +54,8 @@ export interface GameState {
   selectedCountryId: number;
   countries: CountryState[];
   provinces: ProvinceState[];
+  units: ArmyUnit[];
+  nextUnitId: number;
   nextOrderId: number;
   log: string[];
 }
@@ -62,6 +74,9 @@ export function createInitialState(world: WorldMap, selectedCountryId = 0): Game
     ownedProvinceIds: provinces.filter((province) => province.ownerId === country.id).map((province) => province.id),
     constructionQueue: []
   }));
+  const units = provinces.filter((province) => province.capital).map((province, index) => ({
+    id: index + 1, countryId: province.ownerId, provinceId: province.id, type: "infantry" as const, strength: 3
+  }));
   return {
     version: 1,
     day: 1,
@@ -70,6 +85,8 @@ export function createInitialState(world: WorldMap, selectedCountryId = 0): Game
     selectedCountryId,
     countries,
     provinces,
+    units,
+    nextUnitId: units.length + 1,
     nextOrderId: 1,
     log: ["Day 1: Campaign initialized."]
   };
@@ -79,7 +96,11 @@ export function validateGameState(value: unknown): value is GameState {
   if (!value || typeof value !== "object") return false;
   const state = value as Partial<GameState>;
   return state.version === 1 && Number.isInteger(state.day) &&
-    Array.isArray(state.countries) && Array.isArray(state.provinces) &&
+    Array.isArray(state.countries) && Array.isArray(state.provinces) && Array.isArray(state.units) &&
+    (state.speed === 1 || state.speed === 2 || state.speed === 4) &&
+    state.units.every((unit) => Number.isInteger(unit.id) && Number.isInteger(unit.countryId) &&
+      Number.isInteger(unit.provinceId) && ["infantry", "armor", "artillery"].includes(unit.type) &&
+      Number.isFinite(unit.strength) && unit.strength >= 0) &&
     state.countries.every((country) => Number.isInteger(country.id) && country.resources &&
       ["money", "manpower", "industry", "steel", "oil"].every((key) =>
         Number.isFinite(country.resources[key as ResourceKey]))) &&
