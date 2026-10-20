@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A pixel-map grand strategy prototype." />
+    <title>BryairFront — Grand Strategy</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div><div class="eyebrow">BRYAIRFRONT / LAYER 1</div><h1>Grand Strategy</h1></div>
+        <div class="topbar-status"><span class="status-dot"></span> LOCAL SIMULATION</div>
+      </header>
+      <main class="layout">
+        <section class="map-card">
+          <div class="panel-heading">
+            <div><h2>World map</h2><p>Pixel territories · Select a province to inspect it</p></div>
+            <div id="map-legend" class="legend"></div>
+          </div>
+          <div class="map-viewport" id="map-viewport"><canvas id="world-map" aria-label="Interactive pixel world map"></canvas></div>
+          <footer class="map-footer"><span id="map-status">Generating world…</span><span>CLICK: SELECT PROVINCE</span></footer>
+        </section>
+        <aside class="side-panel">
+          <section class="info-card"><div class="eyebrow">CAMPAIGN ECONOMY</div><h2 id="campaign-date">Day 1</h2><div id="resource-hud" class="resource-grid"></div><div class="sim-controls"><label for="country-select">Play as</label><select id="country-select" aria-label="Starting country"></select><button id="pause-toggle" type="button">Start</button><button id="advance-day" type="button">+1 day</button><button id="save-game" type="button">Save</button><button id="load-game" type="button">Load</button><label for="speed-select">Speed</label><select id="speed-select"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></div><p id="sim-message" class="muted">Choose a province you own to construct buildings.</p></section><section class="info-card"><div class="eyebrow">PROVINCE INSPECTOR</div><div id="province-details"><h2>No province selected</h2><p class="muted">Click a land region on the map to inspect its owner and terrain.</p></div></section>
+          <section class="info-card">
+            <div class="eyebrow">SIMULATION STATUS</div><h2>Layer 1 prototype</h2>
+            <p class="muted">The map and province data are generated locally. No account, server, or network connection is required.</p>
+            <div class="status-list">
+              <div><span>Map mode</span><strong>Pixel raster</strong></div>
+              <div><span>Province count</span><strong id="province-count">—</strong></div>
+              <div><span>Simulation</span><strong id="simulation-state">Paused</strong></div>
+            </div>
+          </section>
+          <section class="info-card"><div class="eyebrow">RECENT EVENTS</div><ol id="event-log" class="event-log"><li>Campaign initialized.</li></ol></section>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

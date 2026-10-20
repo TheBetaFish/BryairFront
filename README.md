@@ -55,3 +55,18 @@ For a production build, you can run the following command:
 npm run build-prod
 ```
 
+
+
+## Grand Strategy Layer 1 prototype
+
+A separate TypeScript + Vite pixel-map grand-strategy prototype is being developed under [`grand-strategy/`](grand-strategy/). It preserves the original WarFront client and has its own build and GitHub Pages workflows.
+
+For setup, controls, simulation scope, and deployment notes, see the [Grand Strategy README](grand-strategy/README.md).
+
+Quick start:
+
+```bash
+cd grand-strategy
+npm install
+npm run dev
+```
