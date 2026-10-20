@@ -2,7 +2,7 @@ name: Deploy Grand Strategy Prototype
 
 on:
   push:
-    branches: [master]
+    branches: [master, feature/grand-strategy-layer1]
     paths:
       - "grand-strategy/**"
       - ".github/workflows/grand-strategy-pages.yml"
@@ -26,12 +26,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: grand-strategy/package.json
       - name: Install dependencies
         working-directory: grand-strategy
-        run: npm install
+        run: npm install --no-audit --no-fund
       - name: Build
         working-directory: grand-strategy
         run: npm run build
