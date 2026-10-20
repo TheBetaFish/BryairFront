@@ -6,6 +6,8 @@ import type { BuildingType, GameState, ResourceKey } from "./sim/state";
 import { BUILDING_RULES, calculateDailyNet } from "./sim/economy";
 import { advanceDay } from "./sim/tick";
 import { queueConstruction } from "./sim/construction";
+import { attackProvince, recruitUnit, UNIT_RULES } from "./sim/military";
+import type { UnitType } from "./sim/state";
 
 const world = createWorld(20261020);
 const state: GameState = createInitialState(world, 0);
@@ -121,7 +123,8 @@ function renderProvince(province: Province | undefined): void {
     ["Terrain", liveProvince.terrain], ["Population", liveProvince.population.toLocaleString()],
     ["Resource output", `${liveProvince.resourceOutput} / day`], ["Fort level", `${liveProvince.fortLevel} / 5`],
     ["Adjacent provinces", String(liveProvince.neighbors.length)], ["Capital", liveProvince.capital ? "Yes" : "No"],
-    ["Garrison", String(liveProvince.garrison)]
+    ["Garrison", String(liveProvince.garrison)],
+    ["Friendly units", String(state.units.filter((unit) => unit.countryId === state.selectedCountryId && unit.provinceId === liveProvince.id && unit.strength > 0).length)]
   ];
   for (const [label, value] of entries) {
     const row = document.createElement("div"); const key = document.createElement("span"); const content = document.createElement("strong");
@@ -132,7 +135,42 @@ function renderProvince(province: Province | undefined): void {
   const buildingList = document.createElement("p"); buildingList.className = "muted";
   buildingList.textContent = liveProvince.buildings.length ? liveProvince.buildings.map((building) => `${building.type} Lv.${building.level}`).join(" · ") : "None";
   details!.append(buildingHeading, buildingList);
+  const stationed = state.units.filter((unit) => unit.provinceId === liveProvince.id && unit.strength > 0);
+  const armyLine = document.createElement("p"); armyLine.className = "muted";
+  armyLine.textContent = stationed.length ? stationed.map((unit) => `${UNIT_RULES[unit.type].label} ×${unit.strength}`).join(" · ") : "No units stationed here.";
+  details!.append(armyLine);
   if (liveProvince.ownerId === state.selectedCountryId) {
+    const recruitHeading = document.createElement("h3"); recruitHeading.className = "building-heading"; recruitHeading.textContent = "Recruit units";
+    const recruitGrid = document.createElement("div"); recruitGrid.className = "build-grid";
+    (Object.keys(UNIT_RULES) as UnitType[]).forEach((type) => {
+      const rule = UNIT_RULES[type];
+      const button = document.createElement("button"); button.type = "button"; button.className = "build-button";
+      button.textContent = rule.label;
+      button.title = `Cost: ${Object.entries(rule.cost).map(([key, amount]) => `${key} ${amount}`).join(", ")}`;
+      button.addEventListener("click", () => {
+        const result = recruitUnit(state, liveProvince.id, type);
+        simMessage!.textContent = result.message;
+        if (result.ok) { renderProvince(liveProvince); renderEconomy(); }
+      });
+      recruitGrid.append(button);
+    });
+    details!.append(recruitHeading, recruitGrid);
+    const enemyNeighbors = liveProvince.neighbors.map((id) => state.provinces[id]).filter((neighbor) => neighbor.ownerId !== state.selectedCountryId);
+    if (enemyNeighbors.length) {
+      const attackHeading = document.createElement("h3"); attackHeading.className = "building-heading"; attackHeading.textContent = "Attack adjacent territory";
+      const attackGrid = document.createElement("div"); attackGrid.className = "build-grid";
+      for (const target of enemyNeighbors) {
+        const button = document.createElement("button"); button.type = "button"; button.className = "build-button";
+        button.textContent = target.name; button.title = `Target terrain: ${target.terrain}; fort level ${target.fortLevel}`;
+        button.addEventListener("click", () => {
+          const result = attackProvince(state, liveProvince.id, target.id, state.selectedCountryId);
+          simMessage!.textContent = result.message;
+          redraw();
+        });
+        attackGrid.append(button);
+      }
+      details!.append(attackHeading, attackGrid);
+    }
     const buildHeading = document.createElement("h3"); buildHeading.className = "building-heading"; buildHeading.textContent = "Construct";
     const buildGrid = document.createElement("div"); buildGrid.className = "build-grid";
     (Object.keys(BUILDING_RULES) as BuildingType[]).forEach((type) => {
