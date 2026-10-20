@@ -26,9 +26,10 @@ const simulationState = document.querySelector<HTMLElement>("#simulation-state")
 const simMessage = document.querySelector<HTMLElement>("#sim-message");
 const saveButton = document.querySelector<HTMLButtonElement>("#save-game");
 const loadButton = document.querySelector<HTMLButtonElement>("#load-game");
+const eventLog = document.querySelector<HTMLOListElement>("#event-log");
 
 if (!canvas || !status || !details || !count || !legend || !resourceHud || !campaignDate ||
-    !pauseToggle || !advanceButton || !speedSelect || !countrySelect || !simulationState || !simMessage || !saveButton || !loadButton) {
+    !pauseToggle || !advanceButton || !speedSelect || !countrySelect || !simulationState || !simMessage || !saveButton || !loadButton || !eventLog) {
   throw new Error("Required game UI elements were not found.");
 }
 const context = canvas.getContext("2d", { alpha: false });
@@ -103,6 +104,10 @@ function renderEconomy(): void {
   simulationState!.textContent = state.paused ? "Paused" : `Running · ${state.speed}×`;
   const queued = country.constructionQueue.length;
   simMessage!.textContent = queued ? `${queued} construction order(s) in progress.` : "Select one of your provinces to queue a building.";
+  eventLog!.replaceChildren();
+  for (const entry of state.log.slice(0, 6)) {
+    const item = document.createElement("li"); item.textContent = entry; eventLog!.append(item);
+  }
 }
 function renderProvince(province: Province | undefined): void {
   details!.replaceChildren();
