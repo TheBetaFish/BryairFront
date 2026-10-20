@@ -2,10 +2,7 @@ name: Deploy Grand Strategy Prototype
 
 on:
   push:
-    branches: [master, feature/grand-strategy-layer1]
-    paths:
-      - "grand-strategy/**"
-      - ".github/workflows/grand-strategy-pages.yml"
+    branches: [feature/grand-strategy-layer1]
   workflow_dispatch:
 
 permissions:
