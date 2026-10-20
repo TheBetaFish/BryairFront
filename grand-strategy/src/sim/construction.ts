@@ -30,7 +30,7 @@ export function queueConstruction(state: GameState, provinceId: number, building
 
 export function advanceConstruction(state: GameState): void {
   for (const country of state.countries) {
-    const completed = [];
+    const completed: number[] = [];
     for (const order of country.constructionQueue) {
       order.daysRemaining -= 1;
       if (order.daysRemaining <= 0) {
