@@ -21,13 +21,14 @@ const campaignDate = document.querySelector<HTMLElement>("#campaign-date");
 const pauseToggle = document.querySelector<HTMLButtonElement>("#pause-toggle");
 const advanceButton = document.querySelector<HTMLButtonElement>("#advance-day");
 const speedSelect = document.querySelector<HTMLSelectElement>("#speed-select");
+const countrySelect = document.querySelector<HTMLSelectElement>("#country-select");
 const simulationState = document.querySelector<HTMLElement>("#simulation-state");
 const simMessage = document.querySelector<HTMLElement>("#sim-message");
 const saveButton = document.querySelector<HTMLButtonElement>("#save-game");
 const loadButton = document.querySelector<HTMLButtonElement>("#load-game");
 
 if (!canvas || !status || !details || !count || !legend || !resourceHud || !campaignDate ||
-    !pauseToggle || !advanceButton || !speedSelect || !simulationState || !simMessage || !saveButton || !loadButton) {
+    !pauseToggle || !advanceButton || !speedSelect || !countrySelect || !simulationState || !simMessage || !saveButton || !loadButton) {
   throw new Error("Required game UI elements were not found.");
 }
 const context = canvas.getContext("2d", { alpha: false });
@@ -243,6 +244,7 @@ loadButton.addEventListener("click", () => {
     state.paused = true;
     selectedProvinceId = selectedProvinceId !== null && state.provinces[selectedProvinceId] ? selectedProvinceId : null;
     speedSelect!.value = String(state.speed);
+    countrySelect!.value = String(state.selectedCountryId);
     renderLegend(); redraw();
     simMessage!.textContent = "Campaign loaded. Simulation is paused.";
   } catch {
@@ -256,6 +258,23 @@ pauseToggle.addEventListener("click", () => {
   renderEconomy();
 });
 advanceButton.addEventListener("click", tick);
+for (const country of state.countries) {
+  const option = document.createElement("option");
+  option.value = String(country.id); option.textContent = country.name;
+  countrySelect.append(option);
+}
+countrySelect.value = String(state.selectedCountryId);
+countrySelect.addEventListener("change", () => {
+  const nextId = Number(countrySelect.value);
+  if (!state.countries.some((country) => country.id === nextId)) return;
+  if (timer !== undefined) window.clearInterval(timer);
+  timer = undefined;
+  state.paused = true;
+  state.selectedCountryId = nextId;
+  state.countries.forEach((country) => { country.dailyNet = calculateDailyNet(state, country); });
+  simMessage!.textContent = `Playing as ${state.countries.find((country) => country.id === nextId)!.name}. Simulation paused.`;
+  renderLegend(); redraw();
+});
 speedSelect.addEventListener("change", () => {
   const value = Number(speedSelect.value);
   if (value === 1 || value === 2 || value === 4) state.speed = value;
