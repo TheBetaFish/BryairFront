@@ -4,7 +4,7 @@ A standalone, single-player grand-strategy prototype built with TypeScript, Vite
 
 ## Requirements
 
-- Node.js 20 or newer
+- Node.js 20.19 or newer (or 22.12 or newer), as required by the current Vite release
 - npm
 
 ## Run locally
