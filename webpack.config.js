@@ -26,6 +26,7 @@ function findModules(dir) {
 	return modules;
 }
 
+fs.mkdirSync("./build", {recursive: true});
 fs.writeFileSync("./build/Loader.js", `window.addEventListener("load", () => {${findModules("./src").sort((a, b) => b.priority - a.priority)
 	.map(file => `require("../${file.path}");`).join("")}});`);
 
