@@ -3,7 +3,7 @@ import { createWorld, MAP_HEIGHT, MAP_WIDTH } from "./data/world";
 import type { Province, WorldMap } from "./types";
 import { createInitialState } from "./sim/state";
 import type { BuildingType, GameState, ResourceKey } from "./sim/state";
-import { BUILDING_RULES } from "./sim/economy";
+import { BUILDING_RULES, calculateDailyNet } from "./sim/economy";
 import { advanceDay } from "./sim/tick";
 import { queueConstruction } from "./sim/construction";
 
@@ -21,9 +21,11 @@ const advanceButton = document.querySelector<HTMLButtonElement>("#advance-day");
 const speedSelect = document.querySelector<HTMLSelectElement>("#speed-select");
 const simulationState = document.querySelector<HTMLElement>("#simulation-state");
 const simMessage = document.querySelector<HTMLElement>("#sim-message");
+const saveButton = document.querySelector<HTMLButtonElement>("#save-game");
+const loadButton = document.querySelector<HTMLButtonElement>("#load-game");
 
 if (!canvas || !status || !details || !count || !legend || !resourceHud || !campaignDate ||
-    !pauseToggle || !advanceButton || !speedSelect || !simulationState || !simMessage) {
+    !pauseToggle || !advanceButton || !speedSelect || !simulationState || !simMessage || !saveButton || !loadButton) {
   throw new Error("Required game UI elements were not found.");
 }
 const context = canvas.getContext("2d", { alpha: false });
@@ -178,6 +180,37 @@ canvas.addEventListener("click", (event) => {
   else { selectedProvinceId = id; renderProvince(state.provinces[id]); status!.textContent = `Selected ${state.provinces[id].name}`; }
   drawMap();
 });
+saveButton.addEventListener("click", () => {
+  try {
+    localStorage.setItem("bryairfront-layer1-save-v1", JSON.stringify(state));
+    simMessage!.textContent = "Campaign saved in this browser.";
+  } catch {
+    simMessage!.textContent = "Save failed: browser storage is unavailable.";
+  }
+});
+loadButton.addEventListener("click", () => {
+  try {
+    const raw = localStorage.getItem("bryairfront-layer1-save-v1");
+    if (!raw) { simMessage!.textContent = "No local save found."; return; }
+    const parsed: unknown = JSON.parse(raw);
+    if (!validateGameState(parsed) || parsed.provinces.length !== world.provinces.length ||
+        parsed.countries.length !== world.countries.length) {
+      simMessage!.textContent = "Save file is invalid or incompatible.";
+      return;
+    }
+    if (timer !== undefined) window.clearInterval(timer);
+    timer = undefined;
+    Object.assign(state, parsed);
+    // Saved campaigns load paused to prevent unexpected time advancement.
+    state.paused = true;
+    selectedProvinceId = selectedProvinceId !== null && state.provinces[selectedProvinceId] ? selectedProvinceId : null;
+    speedSelect!.value = String(state.speed);
+    renderLegend(); redraw();
+    simMessage!.textContent = "Campaign loaded. Simulation is paused.";
+  } catch {
+    simMessage!.textContent = "Load failed: the save data could not be read.";
+  }
+});
 pauseToggle.addEventListener("click", () => {
   state.paused = !state.paused;
   if (timer !== undefined) window.clearInterval(timer);
@@ -204,6 +237,7 @@ function assertWorldIsValid(map: WorldMap): void {
   if (state.provinces.length !== map.provinces.length) throw new Error("Simulation province count does not match world map.");
 }
 assertWorldIsValid(world);
+for (const country of state.countries) country.dailyNet = calculateDailyNet(state, country);
 renderLegend(); renderProvince(undefined); drawMap(); renderEconomy();
 count.textContent = String(world.provinces.length);
 status.textContent = `${world.countries.length} countries · ${world.provinces.length} provinces`;
